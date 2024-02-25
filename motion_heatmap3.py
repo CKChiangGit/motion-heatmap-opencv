@@ -8,7 +8,7 @@ from progress.bar import Bar
 
 
 def main():
-    capture = cv2.VideoCapture('HD Security.mp4')
+    capture = cv2.VideoCapture('input.mp4')
     background_subtractor = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=500)
     length = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -18,21 +18,21 @@ def main():
     
     try:
         # creating a folder named data 
-    	if not os.path.exists('frames'): 
-    		os.makedirs('frames') 
+        if not os.path.exists('frames'): 
+            os.makedirs('frames') 
+        if not os.path.exists('output'):
+            os.makedirs('output')
     except OSError: 
-    	print ('Error: Creating directory of data') 
+        print ('Error: Creating directory of data') 
     
     bar = Bar('Processing Frames', max=length)
 
-
     
     first_iteration_indicator = 1
-    # for i in range(0, length):
-    for i in range(0, 600):
+    length = 100
+    for i in range(0, length): # ALTER LENGTH TO LENGTH OF VIDEO / PROCESSING TIME
 
         ret, frame = capture.read()
-        
         
         # If first frame
         if first_iteration_indicator == 1:
@@ -54,6 +54,7 @@ def main():
             
             # detect people -> boxes
             # returns the bounding boxes for the detected objects
+            # ALTER THIS BASED ON THE SIZE OF THE PEOPLE IN THE VIDEO
             boxes, weights = hog.detectMultiScale(frame, winStride=(8,8), padding=(32,32), scale=1.05, hitThreshold=0)
 
             boxes = np.array([[math.ceil(x + w/8*3), math.ceil(y + h/8*3), math.ceil(x + w/8*5), math.ceil(y + h/8*5)] for (x, y, w, h) in boxes])
@@ -78,15 +79,16 @@ def main():
                 blurred_roi = cv2.GaussianBlur(roi, (51, 51), 0)
                 frame[y:y+h, x:x+w] = blurred_roi
             
-            cv2.imwrite('./frame.jpg', frame)
-            cv2.imwrite('./diff-bkgnd-frame.jpg', filter) 
+            cv2.imwrite('./output/frame.jpg', frame)
+            cv2.imwrite('./output/diff-bkgnd-frame.jpg', filter) 
             
             # add accumulated image
             accum_image = cv2.add(accum_image, th1)
-            cv2.imwrite('./mask.jpg', accum_image)
+            cv2.imwrite('./output/mask.jpg', accum_image)
             
             
             # normal with red heat start
+            # ALTER COLORMAP TO ALTER THE COLOR OF THE HEATMAP
             color_image_video = cv2.applyColorMap(accum_image, cv2.COLORMAP_HOT)
             video_frame = cv2.addWeighted(frame, 0.7, color_image_video, 0.7, 0)
 
@@ -100,13 +102,13 @@ def main():
 
     bar.finish()
 
-    make_video('./frames/', './output.avi')
+    make_video('./frames/', './output/output.avi')
 
     color_image = cv2.applyColorMap(accum_image, cv2.COLORMAP_HOT)
     result_overlay = cv2.addWeighted(first_frame, 0.7, color_image, 0.7, 0)
 
     # save the final heatmap
-    cv2.imwrite('diff-overlay.jpg', result_overlay)
+    cv2.imwrite('./output/diff-overlay.jpg', result_overlay)
 
     # cleanup
     capture.release()
