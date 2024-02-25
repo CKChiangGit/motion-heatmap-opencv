@@ -4,7 +4,7 @@ It is a proof of concept and limited in current application due to a lack of dat
 
 It is based off the code from [Medium](https://medium.com/p/fd806e8a2340) article which tracks all motion, which is itself an adaptation of the [Intel Motion Heatmap](https://github.com/intel-iot-devkit/python-cv-samples/tree/master/examples/motion-heatmap)
 
-![example gif](./example/outputMALL_square2.gif)
+![example gif](./example/output.gif)
 
 # Run
 Clone this repository, `cd` into the directory and run `python motion_heatmap3.py `. 
